@@ -34,6 +34,7 @@ def monta_sistema(nome_sistema):
     arq_sistema.close()
     arq_sistema = open(nome_sistema, 'r')   # o resto não é binário
     arq_sistema.seek(8534)      # pula o bitmap que já leu antes
+
     # lê informações sobre o diretório raiz
     info_raiz = arq_sistema.readline().split(' ')
 
@@ -83,8 +84,9 @@ def monta_sistema(nome_sistema):
     info_fat = info_subdir
 
     # monta FAT
-    for i in range(info_fat.index('')):
-        print(info_fat[i], info_fat[i+1], i)
+    tamanho_fat = int(info_fat[0])
+    print('tamanho do FAT:', tamanho_fat, 'len =', len(info_fat[1:tamanho_fat+1]))
+    for i in range(1, tamanho_fat):
         if info_fat[i] == '-1':
             continue
         fat[int(info_fat[i])] = int(info_fat[i + 1])
@@ -94,8 +96,13 @@ def monta_sistema(nome_sistema):
     # não é só isso o espaço desperdiçado, vou mexer ainda
     espaco_desperdicado = info_fat.count('')
 
-    # depois da FAT, são os blocos com conteúdo dos arquivos
-    blocos_conteudo = arq_sistema.read()
+    # depois da FAT, são lidos os blocos com conteúdo dos arquivos
+    # se a FAT termina exatamente no final de um bloco, os blocos já
+    # foram lidos junto com ela e têm que ser separados
+    if info_fat[-1] != '\n':
+        blocos_conteudo = info_fat[tamanho_fat:]
+    else:
+        blocos_conteudo = arq_sistema.read()
     # guarda esses blocos num vetor
     blocos = [blocos_conteudo[0+i:4096+i] for i in range(0, len(blocos_conteudo), 4096)]
 

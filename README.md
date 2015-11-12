@@ -11,7 +11,7 @@ Metadados dos arquivos: nome, tamanho (em bytes), instantes de última modifica�
 
 Subdiretórios: sempre começam com uma / pra identificar que é informação de diretório; aparecem sempre depois de todos os arquivos normais do diretório e além dos metadados iguais aos do diretório raiz, também têm o caminho até o diretório pai (p. ex.: /.../nome_dir_pai) e o nome do próprio diretório. Após metadadados tem espaço e metadados de arquivos, novos subdiretórios, etc. Após o último diretório e seus arquivos e metadados, \n e começa a FAT.
 
-FAT: sequências de números de blocos terminadas em -1, a sequência é feita em pares (p. ex.: 0 1 2 3 -1 significa 0->1->2->3->fim). Termina com espaços (se necessário para completar um bloco de 4KB) e depois \n, e aí começam os blocos com conteúdo dos arquivos.
+FAT: começa com número indicando tamanho das informações a seguir: sequências de números de blocos terminadas em -1, a sequência é feita em pares (p. ex.: 0 1 2 3 -1 significa 0->1->2->3->fim). Termina com espaços (se necessário para completar um bloco de 4KB) e depois \n, e aí começam os blocos com conteúdo dos arquivos.
 
 Blocos c/ conteúdo dos arquivos: conteúdo dos arquivos em texto puro, se o arquivo termina antes do fim de um bloco de 4KB espaços completam até o fim do bloco. O sistema de arquivos acaba com o último bloco que foi alocado, e cresce conforme novos blocos são alocados (até o limite de 100 MB).
 
