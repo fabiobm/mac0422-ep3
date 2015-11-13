@@ -31,6 +31,6 @@ Blocos c/ conteúdo dos arquivos: conteúdo dos arquivos em texto puro, se o arq
 
 .
 
-[FAT] 1 2 3 -1 4 5 6 -1 ...
+[FAT] n 1 2 3 -1 4 5 6 -1 ...
 
 [Blocos] b0 b1 b2 ... bn

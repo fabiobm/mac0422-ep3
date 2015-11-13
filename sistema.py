@@ -3,7 +3,10 @@ from time import *
 from estruturas import *
 
 
+# recebe bitmap lido do arquivo e retorna lista com ele descompactado e
+# completo
 def processa_bitmap(bitmap_preliminar):
+    bitmap_preliminar = [i for i in unpack('B' * 8533, bitmap_preliminar)]
     bitmap = []
 
     for idx, elm in enumerate(bitmap_preliminar):
@@ -24,14 +27,60 @@ def processa_bitmap(bitmap_preliminar):
     return bitmap
 
 
+# recebe lista com bitmap completo e compacta ele para o formato no
+# qual vai ser salvo no arquivo
+def bitmap_para_arquivo(bitmap):
+    compactado = []
+    for i in range(0, len(bitmap), 3):
+
+        if i == len(bitmap) - 1:
+            compactado += [bitmap[i]]
+
+        else:
+            if bitmap[i:i+3] == [0, 0, 0]:
+                compactado += [0]
+            elif bitmap[i:i+3] == [0, 0, 1]:
+                compactado += [1]
+            elif bitmap[i:i+3] == [0, 1, 0]:
+                compactado += [10]
+            elif bitmap[i:i+3] == [0, 1, 1]:
+                compactado += [11]
+            else:
+                compactado += [int(''.join(map(str, bitmap[i:i+3])))]
+
+    return pack('B' * 8533, *compactado)
+
+
+# recebe FAT e converte para informações que ficam guardadas no arquivo
+# que representa o sistema de arquivos
+def fat_para_arquivo(fat):
+    inicios = []
+    caminhos = []
+
+    for num_bloco in fat:
+        if num_bloco not in fat.values():
+            inicios += [num_bloco]
+
+    for num_bloco in inicios:
+        caminhos += [str(num_bloco)]
+        prox = fat[num_bloco]
+        while prox != -1:
+            caminhos += [str(prox)]
+            prox = fat[prox]
+        caminhos += ['-1']
+
+    return ' '.join([str(len(caminhos))] + caminhos)
+
+
 # monta sistema a partir de arquivo com sistema já existente
 def monta_sistema(nome_sistema):
     arq_sistema = open(nome_sistema, 'rb')
     # lê bitmap (binário), transforma em decimal, guarda em vetor
-    dados_bitmap = [i for i in unpack('B' * 8533, arq_sistema.readline()[:8533])]
+    dados_bitmap = arq_sistema.readline()[:8533]
     bitmap = processa_bitmap(dados_bitmap)
     print(bitmap.count(0), 'zeros e', bitmap.count(1), 'uns')
     arq_sistema.close()
+
     arq_sistema = open(nome_sistema, 'r')   # o resto não é binário
     arq_sistema.seek(8534)      # pula o bitmap que já leu antes
 
