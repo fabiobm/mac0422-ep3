@@ -72,8 +72,8 @@ def fat_para_arquivo(fat):
     return ' '.join([str(len(caminhos))] + caminhos)
 
 
-# monta sistema a partir de arquivo com sistema já existente
-def monta_sistema(nome_sistema):
+# lê sistema a partir de arquivo com sistema já existente
+def le_sistema(nome_sistema):
     arq_sistema = open(nome_sistema, 'rb')
     # lê bitmap (binário), transforma em decimal, guarda em vetor
     dados_bitmap = arq_sistema.readline()[:8533]
@@ -160,8 +160,52 @@ def monta_sistema(nome_sistema):
             print(arq.nome, len(arq.conteudo(fat, blocos)))
 
     print('agora, metadados de tudo...:', raiz.metadados())
+    return (bitmap, raiz, fat, blocos)
+
+
+def grava_sistema(nome_sistema, sistema):
+    bytes_gravados = 0
+    arq_sistema = open(nome_sistema, 'wb')
+    bitmap = bitmap_para_arquivo(sistema.bitmap)
+    bytes_gravados += arq_sistema.write(bitmap)
+    # arq_sistema.close()
+
+    # arq_sistema = open(nome_sistema, 'w')
+    bytes_gravados += arq_sistema.write(b'\n')
+
+    metadados_arqs_dirs = sistema.raiz.metadados()
+    bytes_gravados += arq_sistema.write(bytes(metadados_arqs_dirs, 'ascii'))
+    bytes_gravados += arq_sistema.write(b'\n')
+
+    fat = fat_para_arquivo(sistema.fat)
+    bytes_gravados += arq_sistema.write(bytes(fat, 'ascii'))
+
+    completa_bloco = bytes_gravados % 4096
+    print('modulo', bytes_gravados)
+    if completa_bloco != 0:
+        espacos = 4096 - completa_bloco - 1
+        print('espacos', espacos)
+        arq_sistema.write(b' ' * espacos + b'\n')
+
+    blocos = ''.join(sistema.blocos)
+    arq_sistema.write(bytes(blocos, 'ascii'))
+    arq_sistema.close()
+
+
+class SistemaArquivos:
+
+    def __init__(self, nome, existe=None):
+        if existe is None:
+            self.bitmap = [1] * 25597
+            self.raiz = Diretorio(None, '/', int(time()), '')
+            self.fat = {}
+            self.blocos = []
+            grava_sistema(nome, self)
+
+        else:
+            self.bitmap, self.raiz, self.fat, self.blocos = le_sistema(nome)
 
 
 
-if __name__ == '__main__':
-    monta_sistema('sistema')
+# if __name__ == '__main__':
+#     monta_sistema('sistema')

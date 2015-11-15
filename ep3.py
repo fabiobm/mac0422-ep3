@@ -1,4 +1,8 @@
 from time import time
+from os import path
+from sistema import *
+
+sistema_montado = False     # controla se algum sistema já foi montado
 
 while True:
 
@@ -14,9 +18,23 @@ while True:
     # de fazer os testes depois)
 
     if comandos[0] == 'mount':
+        if sistema_montado:
+            print('Um sistema já está montado, desmonte ele para montar outro')
+            continue
+
         try:
             inicio = time()
-            comandos[1]
+            if path.exists(comandos[1]):
+                sistema_arquivos = SistemaArquivos(comandos[1], True)
+            else:
+                sistema_arquivos = SistemaArquivos(comandos[1])
+
+            sistema_montado = True
+
+            print('bitmap:', sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+            print('diretoriosmeta:', sistema_arquivos.raiz.metadados())
+            print('fat:', sistema_arquivos.fat)
+            print('blocos:', [len(i) for i in sistema_arquivos.blocos], len(sistema_arquivos.blocos))
             print('Tempo:', time() - inicio)
         except IndexError:
             print('Especifique o nome do arquivo')
@@ -89,4 +107,4 @@ while True:
         print('df')
 
     if comandos[0] == 'umount':
-        print('umount')
+        sistema_montado = False
