@@ -1,5 +1,5 @@
-from struct import *
-from time import *
+from struct import pack, unpack
+from time import time, ctime
 from estruturas import *
 
 

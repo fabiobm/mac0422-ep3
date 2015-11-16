@@ -1,3 +1,6 @@
+from time import time
+
+
 class Arquivo:
     '''
     Representação de um arquivo com nome, tamanho (em bytes) e
@@ -5,15 +8,13 @@ class Arquivo:
     bloco em que começa o conteúdo do arquivo.
     '''
 
-    modificado = 0
-    acessado = 0
-
     def __init__(self, metadados, nome=None, tamanho=None, instante=None, bloco_inicio=None):
         if metadados is None:
             self.nome = nome
             self.tamanho = tamanho
-            self.criado = instante
             self.modificado = instante
+            self.criado = instante
+            self.acessado = instante
             self.bloco_inicio = bloco_inicio
 
         else:   # cria a partir de metadados obtidos do arquivo
@@ -31,7 +32,21 @@ class Arquivo:
             texto += blocos[prox_bloco]
             prox_bloco = fat[prox_bloco]
 
-        return texto
+        return texto[:self.tamanho]
+
+    def lista_blocos(self, fat):
+        prox = self.bloco_inicio
+        if prox != -1:
+            blocos = [prox]
+        else:
+            blocos = []
+        while True:
+            prox = fat[prox]
+            if prox == -1:
+                break
+            blocos += [prox]
+
+        return blocos
 
     def metadados(self):
         atributos = [self.nome, str(self.tamanho), str(self.modificado)]
@@ -41,14 +56,13 @@ class Arquivo:
 
 
 class Diretorio:
-    modificado = 0
-    acessado = 0
 
     def __init__(self, metadados, nome=None, instante=None, caminho=None):
         if metadados is None:
             self.nome = nome
-            self.criado = instante
             self.modificado = instante
+            self.criado = instante
+            self.acessado = instante
             self.caminho = caminho
 
         else:   # cria a partir de metadados obtidos do arquivo
@@ -63,16 +77,49 @@ class Diretorio:
     def adiciona_arquivo(self, arquivo):
         self.arquivos.append(arquivo)
 
+    def remove_por_nome(self, nome_arquivo):
+        arquivo = self.arquivo(nome_arquivo)
+        if arquivo is not None:
+            self.remove(arquivo)
+
+    def remove(self, arquivo):
+        if isinstance(arquivo, Arquivo):
+            self.arquivos.remove(arquivo)
+
+    def arquivo(self, nome):
+        for arq in self.arquivos:
+            if arq.nome == nome:
+                return arq
+
+    # esse método só é chamado pelo diretório raiz
     def acha_diretorio(self, nome):
         nome = nome[1:]
+        if nome == '':
+            return self
+        if nome[-1] == '/':
+            nome = nome[:-1]
         nome = nome.split('/')
-        diretorio = self.arquivos[self.arquivos.index(nome[0])]
-        i = 1
+        diretorio = self
+        i = 0
         while len(nome) > i:
-            diretorio = diretorio.arquivos[diretorio.arquivos.index(nome[i])]
+            prox = diretorio.arquivo(nome[i])
+            diretorio = diretorio.arquivos[diretorio.arquivos.index(prox)]
             i += 1
 
         return diretorio
+
+    def find(self, nome_arquivo):
+        achados = [self.arquivo(nome_arquivo)]
+        if achados == [None]:
+            achados = []
+        self.acessado = int(time())
+
+        for subdir in self.arquivos:
+            if isinstance(subdir, Diretorio):
+                achados_sub = subdir.find(nome_arquivo)
+                achados += [subdir.nome + '/' + i for i in achados_sub]
+
+        return achados
 
     def metadados(self):
         meta_dir = []

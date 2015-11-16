@@ -1,8 +1,12 @@
-from time import time
 from os import path
+from time import time, ctime
 from sistema import *
+from util import *
 
+sistema_arquivos = None
 sistema_montado = False     # controla se algum sistema já foi montado
+blocos_extras_meta = 0      # número de blocos além do inicial guardando
+                            # metadados de arquivos/diretórios e FAT
 
 while True:
 
@@ -36,6 +40,7 @@ while True:
             print('fat:', sistema_arquivos.fat)
             print('blocos:', [len(i) for i in sistema_arquivos.blocos], len(sistema_arquivos.blocos))
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do arquivo')
 
@@ -44,6 +49,7 @@ while True:
             inicio = time()
             comandos[1] + comandos[2]
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique a origem e o destino')
 
@@ -52,22 +58,43 @@ while True:
             inicio = time()
             comandos[1]
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do diretório')
 
     if comandos[0] == 'rmdir':
         try:
             inicio = time()
-            comandos[1]
+
+            if comandos[1] == '/':
+                print('Não é possível remover o diretório raiz')
+                continue
+
+            caminho_dir_pai = '/'.join(comandos[1].split('/')[:-1])
+            dir_pai = sistema_arquivos.raiz.acha_diretorio(caminho_dir_pai)
+            diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
+
+            rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos, blocos_extras_meta)
+            print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do diretório')
 
     if comandos[0] == 'cat':
         try:
             inicio = time()
-            comandos[1]
+            caminho_dir = comandos[1].split('/')
+            nome_arq = caminho_dir[-1]
+            caminho_dir = '/'.join(caminho_dir[:-1])
+            dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
+            arquivo = dir_arq.arquivo(nome_arq)
+            arquivo.acessado = int(time())
+            print(len(arquivo.conteudo(sistema_arquivos.fat, sistema_arquivos.blocos)))
+
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do arquivo')
 
@@ -76,30 +103,64 @@ while True:
             inicio = time()
             comandos[1]
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do arquivo')
 
     if comandos[0] == 'rm':
         try:
             inicio = time()
-            comandos[1]
+
+            caminho_dir = comandos[1].split('/')
+            nome_arq = caminho_dir[-1]
+            caminho_dir = '/'.join(caminho_dir[:-1])
+            dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
+
+            rm(dir_arq, nome_arq, sistema_arquivos, blocos_extras_meta)
+            print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do arquivo')
 
     if comandos[0] == 'ls':
         try:
             inicio = time()
-            comandos[1]
+
+            diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
+            diretorio.acessado = int(time())
+            for arq in diretorio.arquivos:
+                descricao = ''
+                if isinstance(arq, Diretorio):
+                    descricao += '[D] '
+                descricao += arq.nome + ' '
+                if not isinstance(arq, Diretorio):
+                    descricao += str(arq.tamanho) + ' '
+                descricao += ctime(arq.modificado)
+                print(descricao)
+
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique o nome do diretório')
 
     if comandos[0] == 'find':
         try:
             inicio = time()
-            comandos[1] + comandos[2]
+            caminho_dir = comandos[1]
+            nome_arq = comandos[2]
+            dir_inicio = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
+            resultado = dir_inicio.find(nome_arq)
+
+            for arq in resultado:
+                if caminho_dir[-1] != '/':
+                    print(caminho_dir + '/' + arq)
+                else:
+                    print(caminho_dir + arq)
+
             print('Tempo:', time() - inicio)
+
         except IndexError:
             print('Especifique os nomes do diretório e do arquivo')
 
