@@ -6,13 +6,19 @@ from estruturas import *
 # recebe bitmap lido do arquivo e retorna lista com ele descompactado e
 # completo
 def processa_bitmap(bitmap_preliminar):
+    # "desempacota" do formato binário e passa pra uma lista
     bitmap_preliminar = [i for i in unpack('B' * 8533, bitmap_preliminar)]
     bitmap = []
 
     for idx, elm in enumerate(bitmap_preliminar):
+        # o último elemento da lista "desempacotada" é 1 bit só mesmo
         if idx == len(bitmap_preliminar) - 1:
             bitmap += [elm]
+
+        # os outros elementos são 3 bits juntos, precisa separar
         else:
+            # 000, 001, 010 e 011 foram representados como 0, 1, 10 e 11
+            # porque como são números não poderia ter 0s a mais no começo
             if elm == 0:
                 bitmap += [0, 0, 0]
             elif elm == 1:
@@ -22,6 +28,7 @@ def processa_bitmap(bitmap_preliminar):
             elif elm == 11:
                 bitmap += [0, 1, 1]
             else:
+                # 100, 101, 110 e 111 só precisa separar em 3 dígitos cada
                 bitmap += list(map(int, str(elm)))
 
     return bitmap
@@ -33,10 +40,14 @@ def bitmap_para_arquivo(bitmap):
     compactado = []
     for i in range(0, len(bitmap), 3):
 
+        # o último bit é compactado sozinho
         if i == len(bitmap) - 1:
             compactado += [bitmap[i]]
 
+        # os outros são compactados juntando 3 bits
         else:
+            # os que teriam 0s no começo a mais têm que ser transformados
+            # nos equivalentes sem os 0s extras
             if bitmap[i:i+3] == [0, 0, 0]:
                 compactado += [0]
             elif bitmap[i:i+3] == [0, 0, 1]:
@@ -45,9 +56,11 @@ def bitmap_para_arquivo(bitmap):
                 compactado += [10]
             elif bitmap[i:i+3] == [0, 1, 1]:
                 compactado += [11]
+            # 1,0,0, 1,0,1, 1,1,0 e 1,1,1 só precisam ser juntados
             else:
                 compactado += [int(''.join(map(str, bitmap[i:i+3])))]
 
+    # "empacota" o bitmat nesse formato binário menor
     return pack('B' * 8533, *compactado)
 
 
@@ -57,10 +70,12 @@ def fat_para_arquivo(fat):
     inicios = []
     caminhos = []
 
+    # acha os inícios de caminhos
     for num_bloco in fat:
         if num_bloco not in fat.values():
             inicios += [num_bloco]
 
+    # percorre os caminhos e os salva
     for num_bloco in inicios:
         caminhos += [str(num_bloco)]
         prox = fat[num_bloco]
@@ -69,6 +84,8 @@ def fat_para_arquivo(fat):
             prox = fat[prox]
         caminhos += ['-1']
 
+    # escreve um caminho após o outro com cada número de bloco separado por
+    # um espaço em branco
     return ' '.join([str(len(caminhos))] + caminhos)
 
 
@@ -166,20 +183,24 @@ def le_sistema(nome_sistema):
 def grava_sistema(nome_sistema, sistema):
     bytes_gravados = 0
     arq_sistema = open(nome_sistema, 'wb')
+    # escreve o bitmap
     bitmap = bitmap_para_arquivo(sistema.bitmap)
     bytes_gravados += arq_sistema.write(bitmap)
-    # arq_sistema.close()
-
-    # arq_sistema = open(nome_sistema, 'w')
     bytes_gravados += arq_sistema.write(b'\n')
 
+    # escreve os metadados de arquivos e diretórios
     metadados_arqs_dirs = sistema.raiz.metadados()
     bytes_gravados += arq_sistema.write(bytes(metadados_arqs_dirs, 'ascii'))
     bytes_gravados += arq_sistema.write(b'\n')
 
+    # escreve a FAT
     fat = fat_para_arquivo(sistema.fat)
     bytes_gravados += arq_sistema.write(bytes(fat, 'ascii'))
 
+    # olha se o término da escrita da FAT coincide ou não com o término de um
+    # bloco; se sim, os blocos com conteúdos de arquivos virão diretamente em
+    # seguida; caso contrário, completa esse bloco com espaços em branco e na
+    # última posição uma quebra de linha
     completa_bloco = bytes_gravados % 4096
     print('modulo', bytes_gravados)
     if completa_bloco != 0:
@@ -187,6 +208,7 @@ def grava_sistema(nome_sistema, sistema):
         print('espacos', espacos)
         arq_sistema.write(b' ' * espacos + b'\n')
 
+    # escreve blocos com o conteúdo dos arquivos
     blocos = ''.join(sistema.blocos)
     arq_sistema.write(bytes(blocos, 'ascii'))
     arq_sistema.close()
@@ -204,8 +226,3 @@ class SistemaArquivos:
 
         else:
             self.bitmap, self.raiz, self.fat, self.blocos = le_sistema(nome)
-
-
-
-# if __name__ == '__main__':
-#     monta_sistema('sistema')

@@ -71,6 +71,7 @@ while True:
                 continue
 
             caminho_dir_pai = '/'.join(comandos[1].split('/')[:-1])
+            # acha o pai e o diretorio que vai remover
             dir_pai = sistema_arquivos.raiz.acha_diretorio(caminho_dir_pai)
             diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
 
@@ -86,11 +87,15 @@ while True:
         try:
             inicio = time()
             caminho_dir = comandos[1].split('/')
-            nome_arq = caminho_dir[-1]
+            nome_arq = caminho_dir[-1]              # guarda o nome do arquivo
             caminho_dir = '/'.join(caminho_dir[:-1])
+            # acha o diretório onde o arquivo tá
             dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
             arquivo = dir_arq.arquivo(nome_arq)
             arquivo.acessado = int(time())
+            # tá mostrando só o tamanho do conteúdo do arquivo pra não ficar
+            # mostrando os arquivos gigantes de teste inteiros, depois é só
+            # tirar esse len() que vai mostrar o conteúdo mesmo
             print(len(arquivo.conteudo(sistema_arquivos.fat, sistema_arquivos.blocos)))
 
             print('Tempo:', time() - inicio)
@@ -132,9 +137,11 @@ while True:
             diretorio.acessado = int(time())
             for arq in diretorio.arquivos:
                 descricao = ''
+                # diretórios são representados com um [D] antes do nome
                 if isinstance(arq, Diretorio):
                     descricao += '[D] '
                 descricao += arq.nome + ' '
+                # diretórios não têm tamanho
                 if not isinstance(arq, Diretorio):
                     descricao += str(arq.tamanho) + ' '
                 descricao += ctime(arq.modificado)

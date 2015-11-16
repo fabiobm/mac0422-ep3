@@ -32,6 +32,8 @@ class Arquivo:
             texto += blocos[prox_bloco]
             prox_bloco = fat[prox_bloco]
 
+        # o que estiver depois do limite do tamanho do arquivo é espaço em
+        # branco que deve ser ignorado
         return texto[:self.tamanho]
 
     def lista_blocos(self, fat):
@@ -76,6 +78,8 @@ class Diretorio:
 
     def adiciona_arquivo(self, arquivo):
         self.arquivos.append(arquivo)
+        # lembrar de garantir que diretórios vão estar sempre depois dos
+        # arquivos regulares na lista de arquivos dos diretório
 
     def remove_por_nome(self, nome_arquivo):
         arquivo = self.arquivo(nome_arquivo)
@@ -109,11 +113,12 @@ class Diretorio:
         return diretorio
 
     def find(self, nome_arquivo):
-        achados = [self.arquivo(nome_arquivo)]
+        achados = [self.arquivo(nome_arquivo)]  # no próprio diretório
         if achados == [None]:
             achados = []
         self.acessado = int(time())
 
+        # nos subdiretórios
         for subdir in self.arquivos:
             if isinstance(subdir, Diretorio):
                 achados_sub = subdir.find(nome_arquivo)
