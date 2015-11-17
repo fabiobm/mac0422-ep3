@@ -3,7 +3,7 @@ MAC0422 (Sistemas Operacionais) - EP 3
 
 ## Esquema do arquivo que representa o sistema de arquivos
 
-Bitmap: 1 = livre, 0 = ocupado, essa parte do arquivo é binária, são 8533 bytes (25600 blocos, mas os 3 primeiros com certeza vão estar ocupados pelo próprio bitmap e os metadados e FAT; representando 3 blocos por byte temos 8532 \* 3 = 25596 e sobra um bloco que vai ser representado por um byte inteiro) e termina com um \n, e aí começa direto metadados.
+Bitmap: 1 = livre, 0 = ocupado, essa parte do arquivo é binária, são 8485 bytes (25600 blocos, mas os 2 primeiros com certeza vão estar ocupados pelo próprio bitmap e os 145 seguintes estão reservados pra metadados e FAT, sobrando 25453; representando 3 blocos por byte temos 8484 \* 3 = 25452 e sobra um bloco que vai ser representado por um byte inteiro) e termina com um \n, e aí começa direto metadados.
 
 Metadados do diretório raiz: instantes de última modificação, criação e acesso, termina com espaço e passa aos metadados dos arquivos do diretório.
 

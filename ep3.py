@@ -77,6 +77,9 @@ while True:
             rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos)
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
+            print('vou atualizar o arquivo')
+            grava_sistema(sistema_arquivos)
+
             print('Tempo:', time() - inicio)
 
         except IndexError:
@@ -122,6 +125,9 @@ while True:
 
             rm(dir_arq, nome_arq, sistema_arquivos)
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+
+            print('vou atualizar o arquivo')
+            grava_sistema(sistema_arquivos)
 
             print('Tempo:', time() - inicio)
 

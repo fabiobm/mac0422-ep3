@@ -6,16 +6,13 @@ from estruturas import *
 def rm(dir_arq, nome_arq, sistema_arquivos):
     blocos_arq = dir_arq.arquivo(nome_arq).lista_blocos(sistema_arquivos.fat)
     for bloco in blocos_arq:
-        # os blocos dos arquivos estão sempre depois dos blocos usados pra
-        # guardar os metadados e a FAT, então tem que checar se tá usando
-        # blocos a mais pros metadados (a mais em relação ao bloco que vai ser
-        # usado com certeza). os blocos dos arquivos que são removidos são
-        # marcados no bitmap como livres e tirados da FAT, mas o conteúdo deles
-        # não é apagado, então o tamanho do arquivo que representa o sistema de
-        # arquivos pode não diminuir quando arquivos são removidos, mas esse
-        # arquivo pode ter 100 MB e ainda ter espaço livre; pra saber o tamanho
-        # ocupado tem que usar a função calcula_tamanho() do sistema de arquivos.
-        sistema_arquivos.bitmap[bloco+sistema_arquivos.blocos_extras_meta] = 1
+        # os blocos dos arquivos que são removidos são marcados no bitmap como
+        # livres e tirados da FAT, mas o conteúdo deles não é apagado, então o
+        # tamanho do arquivo que representa o sistema de arquivos pode não
+        # diminuir quando arquivos são removidos, mas esse arquivo pode ter
+        # 100 MB e ainda ter espaço livre; pra saber o tamanho ocupado tem que
+        # usar a função calcula_tamanho() do sistema de arquivos.
+        sistema_arquivos.bitmap[bloco] = 1
         del sistema_arquivos.fat[bloco]
 
     dir_arq.remove_por_nome(nome_arq)

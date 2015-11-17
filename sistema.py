@@ -7,7 +7,7 @@ from estruturas import *
 # completo
 def processa_bitmap(bitmap_preliminar):
     # "desempacota" do formato binário e passa pra uma lista
-    bitmap_preliminar = [i for i in unpack('B' * 8533, bitmap_preliminar)]
+    bitmap_preliminar = [i for i in unpack('B' * 8485, bitmap_preliminar)]
     bitmap = []
 
     for idx, elm in enumerate(bitmap_preliminar):
@@ -61,7 +61,7 @@ def bitmap_para_arquivo(bitmap):
                 compactado += [int(''.join(map(str, bitmap[i:i+3])))]
 
     # "empacota" o bitmat nesse formato binário menor
-    return pack('B' * 8533, *compactado)
+    return pack('B' * 8485, *compactado)
 
 
 # recebe FAT e converte para informações que ficam guardadas no arquivo
@@ -93,13 +93,13 @@ def fat_para_arquivo(fat):
 def le_sistema(nome_sistema):
     arq_sistema = open(nome_sistema, 'rb')
     # lê bitmap (binário), transforma em decimal, guarda em vetor
-    dados_bitmap = arq_sistema.readline()[:8533]
+    dados_bitmap = arq_sistema.readline()[:8485]
     bitmap = processa_bitmap(dados_bitmap)
     print(bitmap.count(0), 'zeros e', bitmap.count(1), 'uns')
     arq_sistema.close()
 
     arq_sistema = open(nome_sistema, 'r')   # o resto não é binário
-    arq_sistema.seek(8534)      # pula o bitmap que já leu antes
+    arq_sistema.seek(8486)      # pula o bitmap que já leu antes
 
     # lê informações sobre o diretório raiz
     info_raiz = arq_sistema.readline().split(' ')
@@ -218,7 +218,7 @@ class SistemaArquivos:
 
     def __init__(self, nome, existe=None):
         if existe is None:
-            self.bitmap = [1] * 25597
+            self.bitmap = [1] * 25453
             self.raiz = Diretorio(None, '/', int(time()), '')
             self.fat = {}
             self.blocos = []
@@ -233,15 +233,15 @@ class SistemaArquivos:
 
     # calcula o tamanho (em bytes) do sistema de arquivos
     def calcula_tamanho(self):
-        # 8533 mais o /n no fim
-        tam_bitmap = 8534
+        # 8485 mais o /n no fim
+        tam_bitmap = 8486
         # completa um bloco mais o número de blocos extras
-        tam_metadados_fat = 3754 + 4096 * self.blocos_extras_meta
+        tam_metadados_fat = 3802 + 4096 * self.blocos_extras_meta
 
         tam_blocos_arq = 0
         for num, bloco in enumerate(self.blocos):
             # só conta os blocos que não forem de arquivos removidos
-            if self.bitmap[num+self.blocos_extras_meta] == 0:
+            if self.bitmap[num] == 0:
                 tam_blocos_arq += 4096
 
         return tam_bitmap + tam_metadados_fat + tam_blocos_arq

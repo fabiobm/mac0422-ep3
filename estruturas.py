@@ -133,6 +133,8 @@ class Diretorio:
         achados = [self.arquivo(nome_arquivo)]  # no próprio diretório
         if achados == [None]:
             achados = []
+        else:
+            achados = [achados[0].nome]
         self.acessado = int(time())
 
         # nos subdiretórios

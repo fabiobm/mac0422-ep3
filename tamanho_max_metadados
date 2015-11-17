@@ -1,0 +1,47 @@
+tamanho_max_metadados
+
+[raiz] 144
+[0] 96 + 100*103 + 606 = 11002
+[n] 95 + n*65 + 100*103 + 606 = 11001 + n*65
+[soma 1-30] = 360255
+[total] = 371401
+
+[Diretório raiz] [10] [10] [10]
+
+[arquivo 50MB] [64] [6] [10] [10] [10] [5]
+[9 espaços/quebras]
+
+[Diretório 0] [1] [1] [64] [10] [10] [10]
+100x          [64] [4] [10] [10] [10] [5]
+[606 espaços/quebras em cada diretório]
+
+[Diretório 1] [1] [65] [64] [10] [10] [10]
+100x          [64] [4] [10] [10] [10] [5]
+
+[Diretório 2] [1] [130] [64] [10] [10] [10]
+100x          [64] [4] [10] [10] [10] [5]
+
+.
+.
+.
+
+[Diretório n] [1] [n * 65] [10] [10] [10]
+100x          [64] [4] [10] [10] [10] [5]
+
+.
+.
+.
+
+[Diretório 30] [1] [1950] [10] [10] [10]
+100x          [64] [4] [10] [10] [10] [5]
+
+[FAT] considera que pode ter 25460 max blocos com conteudo de arquivo (resto reservado pra metadados/fat/bitmap), na verdade ocupa mais que isso, ou seja, fat cobre casos maximos mesmo
+
+10 nums de 1 digito + 90 nums de 2 digitos + 900 de 3 digitos + 9000 de 4 digitos + 15461 de 5 digitos + 25460 -1s (2 digitos) + 25460*2 espaços em branco
+
+[10] [90*2] [900*3] [9000*4] [15461*5] [4*25460]
+total = 10 + 180 + 2700 + 36000 + 77305 + 101840 = 218035
+
+
+total final  = 8485 + 371401 + 218035 = 557036 ~= 146 blocos => arredonda pra 147 blocos pq aí 25453 / 3 = 8484 trios + 1
+obs importante: arquivos dentro dos subdiretórios têm que ser pequenos (1, 2 blocos)
