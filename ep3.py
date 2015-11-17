@@ -5,8 +5,6 @@ from util import *
 
 sistema_arquivos = None
 sistema_montado = False     # controla se algum sistema já foi montado
-blocos_extras_meta = 0      # número de blocos além do inicial guardando
-                            # metadados de arquivos/diretórios e FAT
 
 while True:
 
@@ -15,6 +13,7 @@ while True:
     comandos = entrada.split(' ')
 
     if comandos[0] == 'sai':
+        print(sistema_arquivos.calcula_tamanho())
         break
 
     # Por enquanto cada comando só olha se os argumentos tão lá
@@ -75,7 +74,7 @@ while True:
             dir_pai = sistema_arquivos.raiz.acha_diretorio(caminho_dir_pai)
             diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
 
-            rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos, blocos_extras_meta)
+            rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos)
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
             print('Tempo:', time() - inicio)
@@ -121,7 +120,7 @@ while True:
             caminho_dir = '/'.join(caminho_dir[:-1])
             dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
 
-            rm(dir_arq, nome_arq, sistema_arquivos, blocos_extras_meta)
+            rm(dir_arq, nome_arq, sistema_arquivos)
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
             print('Tempo:', time() - inicio)
@@ -172,7 +171,7 @@ while True:
             print('Especifique os nomes do diretório e do arquivo')
 
     if comandos[0] == 'df':
-        print('df')
+        print('df (num dirs, num arqs):', sistema_arquivos.raiz.count())
 
     if comandos[0] == 'umount':
         sistema_montado = False

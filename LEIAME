@@ -7,3 +7,13 @@ Sobre instantes de último acesso/modificação e criação:
 [OK] - quando dá ls, atualiza último acesso só de diretório (ls)
 [OK] - quando dá find, atualiza último acesso só de diretório(s) (find)
 [OK] - quando dá cat, atualiza último acesso de arquivo (cat)
+
+
+Sobre remoção de arquivos:
+    
+    Quando remove um arquivo, os blocos dele no bitmap são atualizados pra indicar que tão livres e o caminho para montar o conteúdo é removido da FAT, mas o conteúdo dos blocos em si continua armazenado no sistema, porque, se fosse remover, ia ter confusão na numeração desses blocos e ia acabar tendo que depserdiçar espaço pra por o número nos blocos, então mantém os blocos lá mas sobrescreve quando (se) precisar. Com isso, o tamanho do arquivo que representa o sistema só diminui se apagar os metadados causar fizer com que use um (ou mais) blocos a menos. Assim, é possível que o arquivo que representa o sistema tenha 100 MB mas ainda tenha espaço livre.
+
+
+Sobre contagem de espaço desperdiçado:
+
+    Só vai ser considerado o espaço desperdiçado pelos blocos com o conteúdo dos arquivos, porque os com metadados na verdade ainda têm espaço pra mais metadados.

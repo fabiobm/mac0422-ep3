@@ -226,3 +226,22 @@ class SistemaArquivos:
 
         else:
             self.bitmap, self.raiz, self.fat, self.blocos = le_sistema(nome)
+
+        # número de blocos além do inicial guardando metadados de
+        # arquivos/diretórios e FAT
+        self.blocos_extras_meta = 0
+
+    # calcula o tamanho (em bytes) do sistema de arquivos
+    def calcula_tamanho(self):
+        # 8533 mais o /n no fim
+        tam_bitmap = 8534
+        # completa um bloco mais o número de blocos extras
+        tam_metadados_fat = 3754 + 4096 * self.blocos_extras_meta
+
+        tam_blocos_arq = 0
+        for num, bloco in enumerate(self.blocos):
+            # só conta os blocos que não forem de arquivos removidos
+            if self.bitmap[num+self.blocos_extras_meta] == 0:
+                tam_blocos_arq += 4096
+
+        return tam_bitmap + tam_metadados_fat + tam_blocos_arq

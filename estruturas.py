@@ -36,6 +36,7 @@ class Arquivo:
         # branco que deve ser ignorado
         return texto[:self.tamanho]
 
+    # lista dos blocos percorridos para montar o conteúdo do arquivo
     def lista_blocos(self, fat):
         prox = self.bloco_inicio
         if prox != -1:
@@ -75,6 +76,22 @@ class Diretorio:
             self.acessado = int(metadados[5])
 
         self.arquivos = []
+
+    # retorna tupla (d, a) onde d é o número de diretórios e a o número de
+    # arquivos embaixo desse diretório (direta e indiretamente)
+    def count(self):
+        num_arqs = len([arq for arq in self.arquivos if isinstance(arq, Arquivo)])
+        num_dirs = len(self.arquivos) - num_arqs
+        if self.nome == '/':
+            num_dirs += 1       # tem que contar o próprio raiz
+
+        for subdir in self.arquivos:
+            if isinstance(subdir, Diretorio):
+                nums_subdir = subdir.count()
+                num_arqs += nums_subdir[0]
+                num_dirs += nums_subdir[1]
+
+        return (num_dirs, num_arqs)
 
     def adiciona_arquivo(self, arquivo):
         self.arquivos.append(arquivo)
