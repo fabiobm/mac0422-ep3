@@ -1,3 +1,4 @@
+from math import ceil
 from time import time
 
 
@@ -77,6 +78,20 @@ class Diretorio:
 
         self.arquivos = []
 
+    # calcula o espaço desperdiçado pelos arquivos nesse diretório e em todos
+    # abaixo, considerando apenas o espaço usado para completar os blocos que
+    # guardam o conteúdo dos arquivos, pois o espaço para completar os blocos
+    # que guardam bitmap/metadados/FAT na verdade ainda poderão ser usados
+    def espaco_desperdicado(self):
+        espaco = 0
+        for arq in self.arquivos:
+            if isinstance(arq, Arquivo):
+                espaco += 4096 * ceil(arq.tamanho / 4096) - arq.tamanho
+            elif isinstance(arq, Diretorio):
+                espaco += arq.espaco_desperdicado()
+
+        return espaco
+
     # retorna tupla (d, a) onde d é o número de diretórios e a o número de
     # arquivos embaixo desse diretório (direta e indiretamente)
     def count(self):
@@ -88,8 +103,8 @@ class Diretorio:
         for subdir in self.arquivos:
             if isinstance(subdir, Diretorio):
                 nums_subdir = subdir.count()
-                num_arqs += nums_subdir[0]
-                num_dirs += nums_subdir[1]
+                num_dirs += nums_subdir[0]
+                num_arqs += nums_subdir[1]
 
         return (num_dirs, num_arqs)
 

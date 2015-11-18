@@ -4,6 +4,7 @@ from sistema import *
 from util import *
 
 sistema_arquivos = None
+nome_sistema = ''
 sistema_montado = False     # controla se algum sistema já foi montado
 
 while True:
@@ -13,7 +14,6 @@ while True:
     comandos = entrada.split(' ')
 
     if comandos[0] == 'sai':
-        print(sistema_arquivos.calcula_tamanho())
         break
 
     # Por enquanto cada comando só olha se os argumentos tão lá
@@ -22,11 +22,12 @@ while True:
 
     if comandos[0] == 'mount':
         if sistema_montado:
-            print('Um sistema já está montado, desmonte ele para montar outro')
+            print(nome_sistema, 'já está montado, desmonte ele para montar outro')
             continue
 
         try:
             inicio = time()
+            nome_sistema = comandos[1]
             if path.exists(comandos[1]):
                 sistema_arquivos = SistemaArquivos(comandos[1], True)
             else:
@@ -78,7 +79,7 @@ while True:
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
             print('vou atualizar o arquivo')
-            grava_sistema(sistema_arquivos)
+            grava_sistema(nome_sistema, sistema_arquivos)
 
             print('Tempo:', time() - inicio)
 
@@ -127,7 +128,7 @@ while True:
             print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
             print('vou atualizar o arquivo')
-            grava_sistema(sistema_arquivos)
+            grava_sistema(nome_sistema, sistema_arquivos)
 
             print('Tempo:', time() - inicio)
 
@@ -177,7 +178,13 @@ while True:
             print('Especifique os nomes do diretório e do arquivo')
 
     if comandos[0] == 'df':
-        print('df (num dirs, num arqs):', sistema_arquivos.raiz.count())
+        ndirs_arqs = sistema_arquivos.raiz.count()
+        print(ndirs_arqs[0], 'diretório(s)')
+        print(ndirs_arqs[1], 'arquivo(s)')
+        espaco_livre = 100 * 1024 * 1024 - sistema_arquivos.calcula_tamanho()
+        print('Espaço livre:', espaco_livre, 'byte(s)')
+        espaco_desperdicado = sistema_arquivos.raiz.espaco_desperdicado()
+        print('Espaço desperdiçado:', espaco_desperdicado, 'byte(s)')
 
     if comandos[0] == 'umount':
         sistema_montado = False

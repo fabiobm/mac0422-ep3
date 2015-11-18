@@ -159,9 +159,6 @@ def le_sistema(nome_sistema):
 
     print(fat)
 
-    # não é só isso o espaço desperdiçado, vou mexer ainda
-    espaco_desperdicado = info_fat.count('')
-
     # depois da FAT, são lidos os blocos com conteúdo dos arquivos
     # se a FAT termina exatamente no final de um bloco, os blocos já
     # foram lidos junto com ela e têm que ser separados
@@ -227,16 +224,16 @@ class SistemaArquivos:
         else:
             self.bitmap, self.raiz, self.fat, self.blocos = le_sistema(nome)
 
-        # número de blocos além do inicial guardando metadados de
-        # arquivos/diretórios e FAT
-        self.blocos_extras_meta = 0
+        # número de blocos guardando o bitmap, os metadados de
+        # arquivos e diretórios e a FAT. começa com 3 pois o bitmap
+        # sozinho já ocupa isso
+        self.blocos_meta = 3
 
-    # calcula o tamanho (em bytes) do sistema de arquivos
+    # calcula a quantidade (em bytes) de espaço ocupado no sistema de
+    # arquivos, excluindo o espaço que pode estar ocupado em disco mas
+    # na verdade é livre que corresponde a conteúdo de arquivos removidos
     def calcula_tamanho(self):
-        # 8485 mais o /n no fim
-        tam_bitmap = 8486
-        # completa um bloco mais o número de blocos extras
-        tam_metadados_fat = 3802 + 4096 * self.blocos_extras_meta
+        tam_meta = 4096 * self.blocos_meta
 
         tam_blocos_arq = 0
         for num, bloco in enumerate(self.blocos):
@@ -244,4 +241,18 @@ class SistemaArquivos:
             if self.bitmap[num] == 0:
                 tam_blocos_arq += 4096
 
-        return tam_bitmap + tam_metadados_fat + tam_blocos_arq
+        return tam_meta + tam_blocos_arq
+
+    # calcula a quantidade (em bytes) de espaço livre no último bloco que
+    # estiver sendo usado para guardar bitmap/metadados/FAT
+    def espaco_livre_meta(self):
+
+        # 8485 mais o \n no fim
+        tam_bitmap = 8486
+
+        # metadados de arquivos e diretórios mais \n no fim
+        tam_meta_arq_dir = len(self.raiz.metadados()) + 1
+        tam_fat = len(fat_para_arquivo(self.fat))
+
+        completa_bloco = (tam_bitmap + tam_meta_arq_dir + tam_fat) % 4096
+        return 4096 - completa_bloco
