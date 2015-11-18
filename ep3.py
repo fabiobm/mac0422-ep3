@@ -109,7 +109,20 @@ while True:
     if comandos[0] == 'touch':
         try:
             inicio = time()
-            comandos[1]
+            caminho_dir = comandos[1].split('/')
+            nome_arq = caminho_dir[-1]              # guarda o nome do arquivo
+            caminho_dir = '/'.join(caminho_dir[:-1])
+            # acha o diretório onde o arquivo tá
+            dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
+            arquivo = dir_arq.arquivo(nome_arq)
+            if arquivo is not None:
+                arquivo.acessado = int(time())
+            else:
+                arquivo = Arquivo(None, nome_arq, 0, int(time()), -1)
+                dir_arq.adiciona_arquivo(arquivo)
+
+            grava_sistema(nome_sistema, sistema_arquivos)
+
             print('Tempo:', time() - inicio)
 
         except IndexError:

@@ -43,7 +43,7 @@ class Arquivo:
         if prox != -1:
             blocos = [prox]
         else:
-            blocos = []
+            return []
         while True:
             prox = fat[prox]
             if prox == -1:
@@ -110,6 +110,10 @@ class Diretorio:
 
     def adiciona_arquivo(self, arquivo):
         self.arquivos.append(arquivo)
+        arqs = [arq for arq in self.arquivos if isinstance(arq, Arquivo)]
+        subdirs = [subdir for subdir in self.arquivos if isinstance(subdir, Diretorio)]
+        self.arquivos = arqs + subdirs
+        print([arq.nome for arq in self.arquivos])
         # lembrar de garantir que diretórios vão estar sempre depois dos
         # arquivos regulares na lista de arquivos dos diretório
 
