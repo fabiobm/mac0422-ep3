@@ -1,7 +1,7 @@
 Sobre instantes de último acesso/modificação e criação:
 
      - quando cria arquivo, cria/mod/acess são setados e mod/acess do diretório também (touch, cp)
-     - quando cria diretório, mod/acess do diretório pai é setado e cria/mod/acess do novo diretório também (mkdir)
+[OK] - quando cria diretório, mod/acess do diretório pai é setado e cria/mod/acess do novo diretório também (mkdir)
 [OK] - quando remove arquivo, mod/acess do diretório é setado (rm)
 [OK] - quando remove diretório, mod/acess do diretório pai é setado (rmdir)
 [OK] - quando dá ls, atualiza último acesso só de diretório (ls)
@@ -16,4 +16,6 @@ Sobre remoção de arquivos:
 
 Sobre contagem de espaço desperdiçado:
 
-    Só vai ser considerado o espaço desperdiçado pelos blocos com o conteúdo dos arquivos, porque os com metadados na verdade ainda têm espaço pra mais metadados.
+    Só vai ser considerado o espaço desperdiçado pelos blocos com o conteúdo dos arquivos, porque os com metadados/bitmap/FAT na verdade ainda têm espaço pra mais metadados/FAT.
+
+No arquivo que representa o sistema de arquivos, os arquivos de tamanho 0 ocupam apenas espaço de metadados, pois não têm nenhum bloco com conteúdo. O primeiro bloco que consta nos metadados é o -1, o que indica que é o "último" bloco, ou seja, não há blocos.

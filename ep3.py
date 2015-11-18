@@ -56,7 +56,23 @@ while True:
     if comandos[0] == 'mkdir':
         try:
             inicio = time()
-            comandos[1]
+
+            caminho_dir = comandos[1].split('/')
+            nome_dir = caminho_dir[-1]
+            caminho_dir_pai = '/'.join(caminho_dir[:-1])
+
+            # tira / extra no final se tiver
+            if len(caminho_dir_pai) > 1 and caminho_dir_pai[-1] == '/':
+                caminho_dir_pai = caminho_dir_pai[:-1]
+
+            dir_pai = sistema_arquivos.raiz.acha_diretorio(caminho_dir_pai)
+            diretorio = Diretorio(None, nome_dir, int(time()), caminho_dir_pai)
+            dir_pai.adiciona_arquivo(diretorio)
+            dir_pai.acessado = int(time())
+            dir_pai.modificado = int(time())
+
+            grava_sistema(nome_sistema, sistema_arquivos)
+
             print('Tempo:', time() - inicio)
 
         except IndexError:
@@ -121,6 +137,8 @@ while True:
                 arquivo = Arquivo(None, nome_arq, 0, int(time()), -1)
                 dir_arq.adiciona_arquivo(arquivo)
 
+            dir_arq.acessado = int(time())
+            dir_arq.modificado = int(time())
             grava_sistema(nome_sistema, sistema_arquivos)
 
             print('Tempo:', time() - inicio)
