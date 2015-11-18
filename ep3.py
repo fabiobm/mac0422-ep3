@@ -47,7 +47,28 @@ while True:
     if comandos[0] == 'cp':
         try:
             inicio = time()
-            comandos[1] + comandos[2]
+
+            caminho = comandos[2].split('/')
+            nome_arq = caminho[-1]
+            conteudo = le_arquivo_externo(comandos[1])
+            arquivo = Arquivo(None, nome_arq, len(conteudo), int(time()), -1)
+
+            tamanho_arq = arquivo.tamanho + len(arquivo.metadados()) + 1
+            if extrapola_limite(tamanho_arq, sistema_arquivos):
+                print('Limite de 100 MB extrapolado, operação não pode ser feita')
+                continue
+
+            aloca_arquivo(arquivo, conteudo, sistema_arquivos)
+
+            caminho_dir = '/'.join(caminho[:-1])
+            print('caminho dir', caminho_dir)
+            diretorio = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
+            diretorio.adiciona_arquivo(arquivo)
+            diretorio.acessado = int(time())
+            diretorio.modificado = int(time())
+
+            grava_sistema(nome_sistema, sistema_arquivos)
+
             print('Tempo:', time() - inicio)
 
         except IndexError:
@@ -67,6 +88,12 @@ while True:
 
             dir_pai = sistema_arquivos.raiz.acha_diretorio(caminho_dir_pai)
             diretorio = Diretorio(None, nome_dir, int(time()), caminho_dir_pai)
+
+            tamanho_meta = len(diretorio.metadados()) + 1
+            if extrapola_limite(tamanho_meta, sistema_arquivos):
+                print('Limite de 100 MB extrapolado, operação não pode ser feita')
+                continue
+
             dir_pai.adiciona_arquivo(diretorio)
             dir_pai.acessado = int(time())
             dir_pai.modificado = int(time())
@@ -133,9 +160,10 @@ while True:
             arquivo = dir_arq.arquivo(nome_arq)
             if arquivo is not None:
                 arquivo.acessado = int(time())
+
             else:
-                arquivo = Arquivo(None, nome_arq, 0, int(time()), -1)
-                dir_arq.adiciona_arquivo(arquivo)
+                if not adiciona_arquivo_vazio(nome_arq, dir_arq, sistema_arquivos):
+                    continue    # retorna False por extrapolar limite de 100 MB
 
             dir_arq.acessado = int(time())
             dir_arq.modificado = int(time())
