@@ -26,7 +26,6 @@ while True:
             continue
 
         try:
-            inicio = time()
             nome_sistema = comandos[1]
             if path.exists(comandos[1]):
                 sistema_arquivos = SistemaArquivos(comandos[1], True)
@@ -35,11 +34,10 @@ while True:
 
             sistema_montado = True
 
-            print('bitmap:', sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
-            print('diretoriosmeta:', sistema_arquivos.raiz.metadados())
-            print('fat:', sistema_arquivos.fat)
-            print('blocos:', [len(i) for i in sistema_arquivos.blocos], len(sistema_arquivos.blocos))
-            print('Tempo:', time() - inicio)
+            # print('bitmap:', sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+            # print('diretoriosmeta:', sistema_arquivos.raiz.metadados())
+            # print('fat:', sistema_arquivos.fat)
+            # print('blocos:', [len(i) for i in sistema_arquivos.blocos], len(sistema_arquivos.blocos))
 
         except IndexError:
             print('Especifique o nome do arquivo')
@@ -61,7 +59,7 @@ while True:
             aloca_arquivo(arquivo, conteudo, sistema_arquivos)
 
             caminho_dir = '/'.join(caminho[:-1])
-            print('caminho dir', caminho_dir)
+            # print('caminho dir', caminho_dir)
             diretorio = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
             diretorio.adiciona_arquivo(arquivo)
             diretorio.acessado = int(time())
@@ -76,7 +74,6 @@ while True:
 
     if comandos[0] == 'mkdir':
         try:
-            inicio = time()
 
             caminho_dir = comandos[1].split('/')
             nome_dir = caminho_dir[-1]
@@ -100,8 +97,6 @@ while True:
 
             grava_sistema(nome_sistema, sistema_arquivos)
 
-            print('Tempo:', time() - inicio)
-
         except IndexError:
             print('Especifique o nome do diretório')
 
@@ -119,9 +114,8 @@ while True:
             diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
 
             rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos)
-            print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+            # print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
-            print('vou atualizar o arquivo')
             grava_sistema(nome_sistema, sistema_arquivos)
 
             print('Tempo:', time() - inicio)
@@ -131,7 +125,6 @@ while True:
 
     if comandos[0] == 'cat':
         try:
-            inicio = time()
             caminho_dir = comandos[1].split('/')
             nome_arq = caminho_dir[-1]              # guarda o nome do arquivo
             caminho_dir = '/'.join(caminho_dir[:-1])
@@ -142,16 +135,14 @@ while True:
             # tá mostrando só o tamanho do conteúdo do arquivo pra não ficar
             # mostrando os arquivos gigantes de teste inteiros, depois é só
             # tirar esse len() que vai mostrar o conteúdo mesmo
-            print(len(arquivo.conteudo(sistema_arquivos.fat, sistema_arquivos.blocos)))
-
-            print('Tempo:', time() - inicio)
+            print(arquivo.conteudo(sistema_arquivos.fat, sistema_arquivos.blocos))
+            grava_sistema(nome_sistema, sistema_arquivos)
 
         except IndexError:
             print('Especifique o nome do arquivo')
 
     if comandos[0] == 'touch':
         try:
-            inicio = time()
             caminho_dir = comandos[1].split('/')
             nome_arq = caminho_dir[-1]              # guarda o nome do arquivo
             caminho_dir = '/'.join(caminho_dir[:-1])
@@ -169,8 +160,6 @@ while True:
             dir_arq.modificado = int(time())
             grava_sistema(nome_sistema, sistema_arquivos)
 
-            print('Tempo:', time() - inicio)
-
         except IndexError:
             print('Especifique o nome do arquivo')
 
@@ -184,9 +173,8 @@ while True:
             dir_arq = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
 
             rm(dir_arq, nome_arq, sistema_arquivos)
-            print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
+            # print(sistema_arquivos.bitmap.count(0), sistema_arquivos.bitmap.count(1))
 
-            print('vou atualizar o arquivo')
             grava_sistema(nome_sistema, sistema_arquivos)
 
             print('Tempo:', time() - inicio)
@@ -196,7 +184,6 @@ while True:
 
     if comandos[0] == 'ls':
         try:
-            inicio = time()
 
             diretorio = sistema_arquivos.raiz.acha_diretorio(comandos[1])
             diretorio.acessado = int(time())
@@ -212,14 +199,13 @@ while True:
                 descricao += ctime(arq.modificado)
                 print(descricao)
 
-            print('Tempo:', time() - inicio)
+            grava_sistema(nome_sistema, sistema_arquivos)
 
         except IndexError:
             print('Especifique o nome do diretório')
 
     if comandos[0] == 'find':
         try:
-            inicio = time()
             caminho_dir = comandos[1]
             nome_arq = comandos[2]
             dir_inicio = sistema_arquivos.raiz.acha_diretorio(caminho_dir)
@@ -230,8 +216,6 @@ while True:
                     print(caminho_dir + '/' + arq)
                 else:
                     print(caminho_dir + arq)
-
-            print('Tempo:', time() - inicio)
 
         except IndexError:
             print('Especifique os nomes do diretório e do arquivo')

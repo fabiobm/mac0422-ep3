@@ -1,11 +1,11 @@
 Sobre instantes de último acesso/modificação e criação:
 
-     - quando cria arquivo, cria/mod/acess são setados e mod/acess do diretório também (touch, cp)
+[OK] - quando cria arquivo, cria/mod/acess são setados e mod/acess do diretório também (touch, cp)
 [OK] - quando cria diretório, mod/acess do diretório pai é setado e cria/mod/acess do novo diretório também (mkdir)
 [OK] - quando remove arquivo, mod/acess do diretório é setado (rm)
 [OK] - quando remove diretório, mod/acess do diretório pai é setado (rmdir)
 [OK] - quando dá ls, atualiza último acesso só de diretório (ls)
-[OK] - quando dá find, atualiza último acesso só de diretório(s) (find)
+[OK] - quando dá find, não atualiza acessos (find)
 [OK] - quando dá cat, atualiza último acesso de arquivo (cat)
 
 

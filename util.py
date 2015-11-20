@@ -88,8 +88,6 @@ def aloca_arquivo(arquivo, conteudo, sistema):
 
     else:
 
-        tamanho_meta = len(arquivo.metadados())
-
         num_blocos = ceil(tamanho / 4096)
         espaco_desperdicado = 4096 - tamanho % 4096
 
@@ -116,8 +114,6 @@ def aloca_arquivo(arquivo, conteudo, sistema):
             # se precisamos criar um bloco novo
             else:
                 sistema.blocos.append(conteudo_bloco)
-                if len(sistema.blocos) != num_bloco_livre+1:
-                    print('algo estranho aqui...')
 
             num_bloco_anterior = num_bloco_livre
 

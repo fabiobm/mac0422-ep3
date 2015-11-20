@@ -113,7 +113,6 @@ class Diretorio:
         arqs = [arq for arq in self.arquivos if isinstance(arq, Arquivo)]
         subdirs = [subdir for subdir in self.arquivos if isinstance(subdir, Diretorio)]
         self.arquivos = arqs + subdirs
-        print([arq.nome for arq in self.arquivos])
         # lembrar de garantir que diretórios vão estar sempre depois dos
         # arquivos regulares na lista de arquivos dos diretório
 
@@ -154,7 +153,6 @@ class Diretorio:
             achados = []
         else:
             achados = [achados[0].nome]
-        self.acessado = int(time())
 
         # nos subdiretórios
         for subdir in self.arquivos:

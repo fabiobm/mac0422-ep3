@@ -95,7 +95,7 @@ def le_sistema(nome_sistema):
     # lê bitmap (binário), transforma em decimal, guarda em vetor
     dados_bitmap = arq_sistema.readline()[:8485]
     bitmap = processa_bitmap(dados_bitmap)
-    print(bitmap.count(0), 'zeros e', bitmap.count(1), 'uns')
+    # print(bitmap.count(0), 'zeros e', bitmap.count(1), 'uns')
     arq_sistema.close()
 
     arq_sistema = open(nome_sistema, 'r')   # o resto não é binário
@@ -108,15 +108,15 @@ def le_sistema(nome_sistema):
     raiz = Diretorio(['', '', '/'] + info_raiz[0:3])
     raiz.modificado = int(info_raiz[0])
     raiz.acessado = int(info_raiz[2])
-    print(raiz.nome, ctime(raiz.acessado), ctime(raiz.modificado), ctime(raiz.criado))
+    # print(raiz.nome, ctime(raiz.acessado), ctime(raiz.modificado), ctime(raiz.criado))
 
     # lê arquivos do diretório raiz, cria eles e adiciona ao diretório
     for i in range(3, len(info_raiz), 6):
         arq = Arquivo(info_raiz[i:i+6])
         raiz.adiciona_arquivo(arq)
 
-    for arq in raiz.arquivos:
-        print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
+    # for arq in raiz.arquivos:
+    #     print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
 
     # próxima linha pode ser info sobre subdiretório ou FAT
     info_subdir = arq_sistema.readline().split(' ')
@@ -132,15 +132,15 @@ def le_sistema(nome_sistema):
         subdir = Diretorio(info_subdir[0:6])
         pai.adiciona_arquivo(subdir)
 
-        print(subdir.caminho+subdir.nome, ctime(subdir.criado), subdir.arquivos)
+        # print(subdir.caminho+subdir.nome, ctime(subdir.criado), subdir.arquivos)
 
         # lê arquivos do subdiretório, cria eles e adiciona ao diretório
         for i in range(6, len(info_subdir), 6):
             arq = Arquivo(info_subdir[i:i+6])
             subdir.adiciona_arquivo(arq)
 
-        for arq in subdir.arquivos:
-            print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
+        # for arq in subdir.arquivos:
+        #     print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
 
         # lê próxima linha, que novamente pode ser subdiretório ou FAT
         info_subdir = arq_sistema.readline().split(' ')
@@ -151,13 +151,13 @@ def le_sistema(nome_sistema):
 
     # monta FAT
     tamanho_fat = int(info_fat[0])
-    print('tamanho do FAT:', tamanho_fat, 'len =', len(info_fat[1:tamanho_fat+1]))
+    #print('tamanho do FAT:', tamanho_fat, 'len =', len(info_fat[1:tamanho_fat+1]))
     for i in range(1, tamanho_fat):
         if info_fat[i] == '-1':
             continue
         fat[int(info_fat[i])] = int(info_fat[i + 1])
 
-    print(fat)
+    #print(fat)
 
     # depois da FAT, são lidos os blocos com conteúdo dos arquivos
     # se a FAT termina exatamente no final de um bloco, os blocos já
@@ -169,11 +169,11 @@ def le_sistema(nome_sistema):
     # guarda esses blocos num vetor
     blocos = [blocos_conteudo[0+i:4096+i] for i in range(0, len(blocos_conteudo), 4096)]
 
-    for arq in raiz.arquivos:
-        if isinstance(arq, Arquivo):
-            print(arq.nome, len(arq.conteudo(fat, blocos)))
+    # APAGAR AQUI ANTES DE ENTREGAR, TO COMENTANDO PQ PODE PRECISAR PRA DEBUG
+    # for arq in raiz.arquivos:
+    #     if isinstance(arq, Arquivo):
+    #         print(arq.nome, len(arq.conteudo(fat, blocos)))
 
-    print('agora, metadados de tudo...:', raiz.metadados())
     return (bitmap, raiz, fat, blocos)
 
 
@@ -199,10 +199,8 @@ def grava_sistema(nome_sistema, sistema):
     # seguida; caso contrário, completa esse bloco com espaços em branco e na
     # última posição uma quebra de linha
     completa_bloco = bytes_gravados % 4096
-    print('modulo', bytes_gravados)
     if completa_bloco != 0:
         espacos = 4096 - completa_bloco - 1
-        print('espacos', espacos)
         arq_sistema.write(b' ' * espacos + b'\n')
 
     # escreve blocos com o conteúdo dos arquivos
