@@ -224,7 +224,7 @@ class SistemaArquivos:
     # arquivos, excluindo o espaço que pode estar ocupado em disco mas
     # na verdade é livre (que corresponde a conteúdo de arquivos removidos)
     def calcula_tamanho(self):
-        tam_meta = self.espaco_livre_meta(True)
+        tam_meta = self.espaco_meta()
 
         tam_blocos_arq = 0
         for num, bloco in enumerate(self.blocos):
@@ -234,11 +234,9 @@ class SistemaArquivos:
 
         return tam_meta + tam_blocos_arq
 
-    # calcula a quantidade (em bytes) de espaço livre no último bloco que
-    # estiver sendo usado para guardar bitmap/metadados/FAT. se o argumento
-    # tamanho for True, devolve a quantidade de espaço ocupado por bitmap/
-    # metadados/FAT
-    def espaco_livre_meta(self, tamanho=False):
+    # calcula a quantidade (em bytes) de espaço usada pelos bloco que estão
+    # sendo usado para guardar bitmap/metadados/FAT
+    def espaco_meta(self):
 
         # 8485 mais o \n no fim
         tam_bitmap = 8486
@@ -247,11 +245,8 @@ class SistemaArquivos:
         tam_meta_arq_dir = len(self.raiz.metadados()) + 1
         tam_fat = len(fat_para_arquivo(self.fat))
 
+        # se precisa completar o bloco com espaços em branco
         completa_bloco = (tam_bitmap + tam_meta_arq_dir + tam_fat) % 4096
         espaco_livre = 4096 - completa_bloco
 
-        if tamanho:
-            # espaço ocupado por metadados/bitmap/FAT + espaço livre
-            return tam_bitmap + tam_meta_arq_dir + tam_fat + espaco_livre
-
-        return espaco_livre
+        return tam_bitmap + tam_meta_arq_dir + tam_fat + espaco_livre
