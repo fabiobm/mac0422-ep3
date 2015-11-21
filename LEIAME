@@ -1,21 +1,110 @@
+Nome: Daniel Jorge Renjiffo, Nº USP: 8531845
+Nome: Fabio Brzostek Muller, Nº USP: 8536127
+
+Nosso código fonte está escrito em Python 3, e o programa foi testado nas versões 3.2.3 e 3.4.2, mas deve funcionar com qualquer versão do Python maior ou igual a 3. Para instalar o interpretador de Python, basta seguir esse link: https://www.python.org/downloads/ e escolher a versão.
+
+Para rodar o EP, basta digitar:
+python3 ep3.py
+
+Observação: na maioria dos sistemas, pelo menos até o dia atual, é preciso chamar python3 para executar o Python 3, mas existe uma possibilidade de que chamando apenas python o Python 3 execute. Além disso, não foi fornecido nenhum arquivo como Makefile ou similar pois não é necessário compilar nada, basta executar o programa com a linha descrita acima.
+
+Após iniciar a execução do ep3.py, o usuário deve montar um sistema de arquivos usando o comando "mount <arquivo>", onde <arquivo> é o caminho (completo) para um arquivo no computador do usuário onde está guardado um sistema de arquivos já existente ou ficará guardado o novo sistema criado. Após montar o sistema, o usuário pode executar os comandos "cp <origem> <destino>", "mkdir <diretorio>", "rmdir <diretorio>", "cat <arquivo>", "touch <arquivo>", "rm <arquivo>", "ls <diretorio>", "find <diretorio> <arquivo>", "df", "umount" e "sai", que fazem as ações descritas no enunciado. O único comando que pode ser executado sem que um sistema tenha sido montado é o "sai", que encerra o programa. Se os caminhos de arquivos e diretórios fornecidos não existirem, o programa provavelmente não funcionará, e não deve ser usado desse modo. Se o caminho de um diretório for fornecido como "/caminho/para/o/diretorio/" em vez de "/caminho/para/o/diretorio", o programa deve funcionar, mas é preferível que se use a segunda versão. No comando "cp", <destino> deve incluir o nome a ser dado para o arquivo dentro do sistema de arquivos simulado.
+
+Os arquivos estruturas.py, util.py e sistema.py não devem ser executados, pois são apenas módulos contendo funções que são chamadas (direta ou indiretamente) pelo programa principal no ep3.py. O arquivo estruturas.py contém as estruturas que representam um arquivo e um diretório; o arquivo util.py contém funções auxiliares chamadas para executar alguns dos comandos, como rm, rmdir e cp; o arquivo sistema.py contém a estrutura que representa um sistema de arquivos e algumas funções auxiliares para a manipulação do sistema e do arquivo que o representa.
+
+Os módulos já existentes que foram usados no EP foram "struct", "time", "os" e "math". Todos são da biblioteca padrão de Python e, portanto, não precisam ser instalados separadamente.
+
+O módulo "struct" é usado para lidar com arquivos binários. Ele é usado nas funções "processa_bitmap()" e "bitmap_para_arquivo()" para converter o bitmap entre dois tipos de representação: uma "completa", na qual cada bit representa um bloco livre ou ocupado (1 ou 0) e uma "compactada", na qual os bits são juntados de 3 em 3 para ocupar menos espaço, e é guardado em forma binária o número decimal resultante dessa junção (por exemplo, se os bits 1, 1 e 0 são juntados, é guardada a representação binária do decimal 110). As funções do módulo que são usadas são "pack()" e "unpack()". Os números são guardados no formato binário "B" que representa um inteiro positivo de 1 byte. Com isso, o espaço usado em disco para guardar o bitmap fica aproximadamente 3 vezes menor. Mais informações podem ser obtidas em: https://docs.python.org/3/library/struct.html
+
+O módulo "time" é usado em diversas funções para atualizar o instante de último acesso, criação ou última modificação de arquivos e diretórios. Mais especificamente, é usada a função "time()", que devolve o número de segundos desde o Epoch time. Esses números são os guardados nos instantes de cada arquivo/diretório. Para transformar eles em algo mais legível quando é executado o "ls", é usada a função "ctime()", que retorna uma string detalhando dia, mês, ano, hora (com minutos e segundos) e dia da semana correspondente ao número de segundos recebido como argumento. Mais informações podem ser obtidas em: https://docs.python.org/3/library/time.html
+
+O módulo "os" é usado na execução do comando "mount". A função "path.exists()" do módulo é usada para verificar se o caminho do arquivo fornecido como argumento de "mount" é um arquivo existente ou não e, sabendo isso, abrir e ler o arquivo se ele já existir ou criar um novo sistema e salvá-lo nesse caminho se ele não existir. Mais informações podem ser obtidas em: https://docs.python.org/3/library/os.path.html#module-os.path
+
+O módulo "math" é um módulo de operações matemáticas e a única função dele que é usada é a função "ceil()", que devolve o teto de um número (menor inteiro maior ou igual a esse número). Essa função é usada no método "espaco_desperdicado()" da classe "Diretorio" e na função "aloca_arquivo()". Em ambos os casos, o objetivo é determinar o número de blocos ocupados por um arquivo dado seu tamanho. Como cada bloco que o arquivo ocupa tem que ser ocupado apenas por ele, se o tamanho do arquivo não é múltiplo do tamanho do bloco, certo espaço é desperdiçado no último bloco usado pelo arquivo e, sendo o tamanho múltiplo do tamanho do bloco ou não, o teto da divisão entre o tamanho do arquivo e o tamanho do bloco resultará no número de blocos ocupados pelo arquivo. Mais informações podem ser obtidas em: https://docs.python.org/3/library/math.html
+
+=========================================================================================
+Sobre o formato do arquivo que representa o sistema de arquivos:
+
+O arquivo que representa o sistema de arquivos tem o seguinte formato:
+Começa com o bitmap, que considera 1 = livre e 0 = ocupado; essa parte do arquivo é binária, ocupa 8485 bytes (esse número será explicado posteriormente) e termina com um \n, logo depois do qual começam os metadados do diretório raiz.
+
+Os metadados do diretório raiz contêm instantes de última modificação, criação e último acesso, que são representados por números inteiros de 10 dígitos representando o número de segundos desde o Epoch time. Essa seção termina com um espaço em branco, depois do qual começam os metadados dos arquivos do diretório raiz.
+
+Os metadados de arquivos contêm nome (texto ASCII de no máximo 64 caracteres), tamanho (número inteiro, em bytes, representa o tamanho do conteúdo do arquivo, sem contar espaço desperdiçado), instantes de última modificação, criação e acesso (mesmo formato descrito no parágrafo anterior), número do bloco no qual o início do arquivo está armazenado (inteiro, começa a partir do 0 e só considera os blocos após bitmap, FAT e metadados, ou seja, somente os que guardam conteúdo dos arquivos). Termina com \n e passa aos subdiretórios do diretório raiz.
+
+Os subdiretórios de qualquer diretório sempre começam com uma / para identificar que é informação de diretório; aparecem sempre depois de todos os arquivos normais do diretório e além dos metadados iguais aos do diretório raiz, também têm o caminho até o diretório pai (por exemplo: /.../nome_dir_pai) e o nome do próprio diretório. Após esses metadadados têm um espaço em branco e os metadados de seus próprios arquivos e subdiretórios, e assim por diante. Cada subdiretório tem seus dados separados dos dados dos arquivos do diretório pai por \n, enquanto os metadados dos diferentes arquivos de cada diretório são separados apenas por espaço em branco. Após o último diretório e seus metadados e metadados de seus arquivos, há um \n e começa a FAT.
+
+Observação: nos metadados dos arquivos e dos diretórios, cada metadado de um arquivo ou diretório está separado do próximo metadado desse mesmo arquivo ou diretório por um espaço em branco.
+
+A FAT começa com número indicando o tamanho das informações nela presentes. Essas informações são sequências de números (inteiros) de blocos terminadas em -1; a sequência é feita em pares e cada número de bloco é separado do próximo por um espaço em branco (por exemplo: 0 1 2 3 -1 significa 0->1->2->3->fim). Termina com espaços (se necessário para completar um bloco de 4KB) e depois \n, e em seguida começam os blocos com conteúdo dos arquivos. Se o término da FAT coincidir com o término de um bloco de 4KB, não há separação entre ela e os blocos seguintes com o conteúdo dos arquivos.
+
+Os blocos com conteúdo dos arquivos guardam simplesmente o conteúdo dos arquivos em texto puro. Se o arquivo termina antes do fim de um bloco de 4KB, espaços em branco são usados para completar até o fim do bloco. O sistema de arquivos acaba com o último bloco que foi alocado, e cresce conforme novos blocos são alocados (até o limite de 100 MB).
+
+Segue abaixo um exemplo bem simplificado de um arquivo com um sistema de arquivos com a seguinte árvore e diretórios/arquivos:
+/
+/arq1
+/arq2
+/dir1
+/dir1/arq3
+/dir1/dir2
+/dir1/dir2/arq4
+/dir3
+
+O bitmap é omitido pelo fato de sua representação ser binária e os conteúdos dos arquivos também pois ocupariam muito espaço os textos dentro de [] servem apenas para facilitar a leitura, não fazendo parte da representação.
+
+[Bitmap omitido]
+[Diretório raiz] 1448124576 1448124576 1448124576 [Arquivos dir. raiz] arq1 1024 1448124576 1448124576 1448124576 0 arq2 2048 1448124576 1448124576 1448124576 1
+[Diretório 1] / / dir1 1448124576 1448124576 1448124576 [Arquivos dir1] arq3 3072 1448124576 1448124576 1448124576 2
+[Diretório 2] / /dir1 dir2 1448124576 1448124576 1448124576 [Arquivos dir2] arq4 4096 1448124576 1448124576 1448124576 3
+[Diretório 3] / / dir3 1448124576 1448124576 1448124576
+[FAT] 8 0 -1 1 -1 2 -1 3 -1
+[Blocos com conteúdo omitidos]
+
+=========================================================================================
+Sobre o Bitmap:
+
+Observação: no EP, o tamanho considerado para 1 KB foi de 1024 bytes.
+
+Considerando o limite de 100 MB e o tamanho de bloco de 4 KB, o sistema teria 25600 blocos. No entanto, contas foram feitas para determinar limites para o número de blocos que os metadados, o bitmap e a FAT ocupariam nos casos de teste mais exigentes presentes no enunciado. Conclui-se que, considerando um sistema de arquivos com 50 MB ocupados por um arquivo, um diretório "pai" (abaixo do raiz) com 30 subdiretórios e 200 arquivos de um bloco cada dentro de cada um desses 30 subdiretórios e os arquivos e diretórios com nomes com até 6 caracteres, 145 blocos para os metadados e a FAT seriam suficiente, com alguma folga para nomes de arquivos um pouco mais compridos (mas não foi possível testar um limite exato).
+
+Como o bitmap ocuparia muito espaço com um byte para cada posição, uma solução que achamos para "comprimi-lo" foi separar os bytes de 3 em 3, converter o número decimal formado por cada 3 bytes em uma representação binária de 1 byte (o que é sempre possível pois com 1s e 0s o maior número decimal formado seria 111, que cabe em 1 byte) e guardar essas representações binárias.
+
+Com isso, sabíamos que o bitmap ocuparia pelo menos 2 blocos (25600 / 3 / 4096 = 2,08333), então, dos 25600 blocos, 147 ficaram reservados para bitmap, metadados e FAT. Assim, sobraram 25453. 8484 * 3 + 1 = 25453, então temos 8484 números binários representativos da união de 3 em 3 bytes dos 25452 primeiros bytes do bitmap, mais 1 número binário representando o último byte em forma binária.
+
+Portanto, o bitmap é guardado em formato binário, e o arquivo precisa ser aberto em modo binário para lê-lo, depois fechado e aberto novamente em modo normal para ler o resto.
+
+=========================================================================================
+Sobre os blocos com conteúdo dos arquivos e remoção:
+
+Os blocos com conteúdo dos arquivos estão dispostos um após o outro e, se o conteúdo de um arquivo tem tamanho não múltiplo do tamanho de um bloco, o último bloco que ele usa terá espaços em branco após o fim do conteúdo para completar o tamanho. Os números dos blocos referenciados pela FAT correspondem aos números da ordem em que os blocos são lidos (o primeiro bloco é o 0, o segundo é o 1, etc.).
+
+O fato de os números corresponderem a ordem e serem sequenciais tem uma implicação no modo com que é feita a remoção de arquivos. Quando um arquivo é removido, os blocos que ele usa são marcados como livres no bitmap e retirados da FAT. No entanto, os blocos em si com o conteúdo permanecem no sistema de arquivo, pois se fossem retirados a numeração dos blocos seguintes mudaria e isso causaria problemas. Assim, os blocos de um arquivo apagado ficam livres para serem usados por outro arquivo que seja alocado, mas se nenhum outro arquivo for alocado eles ficarão lá ocupando espaço. Isso significa que o tamanho do arquivo que representa o sistema de arquivos ocupa pode ser diferente do espaço realmente ocupado no sistema. Então o arquivo pode ter 100 MB mas o sistema ainda não estar cheio, por exemplo. O arquivo pode sim diminuir de tamanho quando um arquivo é removido, devido aos metadados que são removidos.
+
+Ao invés de fazer isso, poderíamos ter deixado junto com cada bloco o número dele ou usado algum caracter para representar um bloco vazio, mas decidimos deixar da maneira descrita acima pois esses outros métodos também ocasionariam desperdício de espaço e/ou divisão de conteúdo em mais blocos por causa da questão do tamanho fixo do bloco.
+
+=========================================================================================
 Sobre instantes de último acesso/modificação e criação:
 
-[OK] - quando cria arquivo, cria/mod/acess são setados e mod/acess do diretório também (touch, cp)
-[OK] - quando cria diretório, mod/acess do diretório pai é setado e cria/mod/acess do novo diretório também (mkdir)
-[OK] - quando remove arquivo, mod/acess do diretório é setado (rm)
-[OK] - quando remove diretório, mod/acess do diretório pai é setado (rmdir)
-[OK] - quando dá ls, atualiza último acesso só de diretório (ls)
-[OK] - quando dá find, não atualiza acessos (find)
-[OK] - quando dá cat, atualiza último acesso de arquivo (cat)
+Quando um arquivo é criado (por meio do "touch" ou do "cp"), o instante de criação e os de último acesso e modificação são atualizados com o instante atual e os instantes de última modificação e acesso do diretório no qual o arquivo foi criado também.
 
+Quando um diretório é criado ("mkdir"), os instantes de criação, última modificação e acesso do diretório criado são atualizados com o instante atual e os de última modificação e acesso do diretório pai também.
 
-Sobre remoção de arquivos:
-    
-    Quando remove um arquivo, os blocos dele no bitmap são atualizados pra indicar que tão livres e o caminho para montar o conteúdo é removido da FAT, mas o conteúdo dos blocos em si continua armazenado no sistema, porque, se fosse remover, ia ter confusão na numeração desses blocos e ia acabar tendo que depserdiçar espaço pra por o número nos blocos, então mantém os blocos lá mas sobrescreve quando (se) precisar. Com isso, o tamanho do arquivo que representa o sistema só diminui se apagar os metadados causar fizer com que use um (ou mais) blocos a menos. Assim, é possível que o arquivo que representa o sistema tenha 100 MB mas ainda tenha espaço livre.
+Quando um arquivo é removido ("rm"), os instantes de última modificação e acesso do diretório são atualizados com o instante atual.
 
+Quando um diretório é removido ("rmdir"), os instantes de última modificação e acesso do diretório pai são atualizados com o instante atual.
 
+Quando "ls" é usado, o instante de último acesso do diretório em que o comando foi usado é atualizado com o instante atual.
+
+Quando "find" é usado, nada é atualizado.
+
+Quando "cat" é usado, o instante de último acesso de arquivo do arquivo em que o comando foi usado é atualizado.
+
+=========================================================================================
 Sobre contagem de espaço desperdiçado:
 
-    Só vai ser considerado o espaço desperdiçado pelos blocos com o conteúdo dos arquivos, porque os com metadados/bitmap/FAT na verdade ainda têm espaço pra mais metadados/FAT.
+Só vai ser considerado o espaço desperdiçado pelos blocos com o conteúdo dos arquivos, porque consideramos que os blocos com metadados/bitmap/FAT na verdade ainda têm espaço para mais metadados/FAT.
 
-No arquivo que representa o sistema de arquivos, os arquivos de tamanho 0 ocupam apenas espaço de metadados, pois não têm nenhum bloco com conteúdo. O primeiro bloco que consta nos metadados é o -1, o que indica que é o "último" bloco, ou seja, não há blocos.
+=========================================================================================
+Sobre arquivos vazios:
+
+No arquivo que representa o sistema de arquivos, os arquivos de tamanho 0 ocupam apenas espaço de metadados, pois não têm nenhum bloco com conteúdo. O primeiro bloco que consta nos metadados desses arquivos é o -1, o que indica que é o "último" bloco, ou seja, não há blocos.
