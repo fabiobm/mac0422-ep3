@@ -1,10 +1,10 @@
 from struct import pack, unpack
-from time import time, ctime
+from time import time
 from estruturas import *
 
 
-# recebe bitmap lido do arquivo e retorna lista com ele descompactado e
-# completo
+# recebe bitmap lido do arquivo que representa o sistema de arquivos e retorna
+# lista com ele "descompactado" e do tamanho completo
 def processa_bitmap(bitmap_preliminar):
     # "desempacota" do formato binário e passa pra uma lista
     bitmap_preliminar = [i for i in unpack('B' * 8485, bitmap_preliminar)]
@@ -34,17 +34,17 @@ def processa_bitmap(bitmap_preliminar):
     return bitmap
 
 
-# recebe lista com bitmap completo e compacta ele para o formato no
-# qual vai ser salvo no arquivo
+# recebe lista com bitmap completo e "compacta" ele para o formato no
+# qual vai ser salvo no arquivo que representa o sistema de arquivos
 def bitmap_para_arquivo(bitmap):
     compactado = []
     for i in range(0, len(bitmap), 3):
 
-        # o último bit é compactado sozinho
+        # o último bit é "compactado" sozinho
         if i == len(bitmap) - 1:
             compactado += [bitmap[i]]
 
-        # os outros são compactados juntando 3 bits
+        # os outros são "compactados" juntando 3 bits
         else:
             # os que teriam 0s no começo a mais têm que ser transformados
             # nos equivalentes sem os 0s extras
@@ -60,12 +60,12 @@ def bitmap_para_arquivo(bitmap):
             else:
                 compactado += [int(''.join(map(str, bitmap[i:i+3])))]
 
-    # "empacota" o bitmat nesse formato binário menor
+    # "empacota" o bitmap nesse formato binário menor
     return pack('B' * 8485, *compactado)
 
 
-# recebe FAT e converte para informações que ficam guardadas no arquivo
-# que representa o sistema de arquivos
+# recebe lista com FAT e converte para formato de informações que ficam
+# guardadas no arquivo que representa o sistema de arquivos
 def fat_para_arquivo(fat):
     inicios = []
     caminhos = []
@@ -89,13 +89,15 @@ def fat_para_arquivo(fat):
     return ' '.join([str(len(caminhos))] + caminhos)
 
 
-# lê sistema a partir de arquivo com sistema já existente
+# lê sistema de arquivos já existente guardado em arquivo no computador e
+# retorna tupla com a lista representando o bitmap, o diretório raiz, a lista
+# representando a FAT e a lista com os blocos com os conteúdos dos arquivos
 def le_sistema(nome_sistema):
     arq_sistema = open(nome_sistema, 'rb')
     # lê bitmap (binário), transforma em decimal, guarda em vetor
     dados_bitmap = arq_sistema.readline()[:8485]
     bitmap = processa_bitmap(dados_bitmap)
-    # print(bitmap.count(0), 'zeros e', bitmap.count(1), 'uns')
+    # não precisa mais ler nada em modo binário
     arq_sistema.close()
 
     arq_sistema = open(nome_sistema, 'r')   # o resto não é binário
@@ -108,15 +110,11 @@ def le_sistema(nome_sistema):
     raiz = Diretorio(['', '', '/'] + info_raiz[0:3])
     raiz.modificado = int(info_raiz[0])
     raiz.acessado = int(info_raiz[2])
-    # print(raiz.nome, ctime(raiz.acessado), ctime(raiz.modificado), ctime(raiz.criado))
 
     # lê arquivos do diretório raiz, cria eles e adiciona ao diretório
     for i in range(3, len(info_raiz), 6):
         arq = Arquivo(info_raiz[i:i+6])
         raiz.adiciona_arquivo(arq)
-
-    # for arq in raiz.arquivos:
-    #     print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
 
     # próxima linha pode ser info sobre subdiretório ou FAT
     info_subdir = arq_sistema.readline().split(' ')
@@ -132,15 +130,10 @@ def le_sistema(nome_sistema):
         subdir = Diretorio(info_subdir[0:6])
         pai.adiciona_arquivo(subdir)
 
-        # print(subdir.caminho+subdir.nome, ctime(subdir.criado), subdir.arquivos)
-
         # lê arquivos do subdiretório, cria eles e adiciona ao diretório
         for i in range(6, len(info_subdir), 6):
             arq = Arquivo(info_subdir[i:i+6])
             subdir.adiciona_arquivo(arq)
-
-        # for arq in subdir.arquivos:
-        #     print(arq.nome, arq.tamanho, ctime(arq.criado), arq.bloco_inicio)
 
         # lê próxima linha, que novamente pode ser subdiretório ou FAT
         info_subdir = arq_sistema.readline().split(' ')
@@ -151,13 +144,10 @@ def le_sistema(nome_sistema):
 
     # monta FAT
     tamanho_fat = int(info_fat[0])
-    #print('tamanho do FAT:', tamanho_fat, 'len =', len(info_fat[1:tamanho_fat+1]))
     for i in range(1, tamanho_fat):
         if info_fat[i] == '-1':
             continue
         fat[int(info_fat[i])] = int(info_fat[i + 1])
-
-    #print(fat)
 
     # depois da FAT, são lidos os blocos com conteúdo dos arquivos
     # se a FAT termina exatamente no final de um bloco, os blocos já
@@ -166,17 +156,15 @@ def le_sistema(nome_sistema):
         blocos_conteudo = info_fat[tamanho_fat:]
     else:
         blocos_conteudo = arq_sistema.read()
-    # guarda esses blocos num vetor
+    # guarda esses blocos numa lista
     blocos = [blocos_conteudo[0+i:4096+i] for i in range(0, len(blocos_conteudo), 4096)]
-
-    # APAGAR AQUI ANTES DE ENTREGAR, TO COMENTANDO PQ PODE PRECISAR PRA DEBUG
-    # for arq in raiz.arquivos:
-    #     if isinstance(arq, Arquivo):
-    #         print(arq.nome, len(arq.conteudo(fat, blocos)))
 
     return (bitmap, raiz, fat, blocos)
 
 
+# recebe um sistema de arquivos em sistema, com o nome nome_sistema, e grava
+# ele num arquivo de nome nome_sistema de acordo com o formato usado para
+# guardar as informações sobre o sistema de arquivos
 def grava_sistema(nome_sistema, sistema):
     bytes_gravados = 0
     arq_sistema = open(nome_sistema, 'wb')
@@ -211,6 +199,16 @@ def grava_sistema(nome_sistema, sistema):
 
 class SistemaArquivos:
 
+    '''
+    Representação de um sistema de arquivos, com uma lista com o bitmap de
+    blocos livres para conteúdo de arquivos, um diretório raiz abaixo do qual
+    estão todos os outros diretórios e arquivos, uma lista com a FAT e uma com
+    os blocos com o conteúdo dos arquivos. Instâncias podem ser criadas por
+    meio da leitura de um arquivo que contém a representação de um sistema já
+    existente (nesse caso, o argumento existe é True) ou por meio da criação
+    de um sistema novo vazio (nesse caso o argumento existe é None ou ausente)
+    '''
+
     def __init__(self, nome, existe=None):
         if existe is None:
             self.bitmap = [1] * 25453
@@ -224,7 +222,7 @@ class SistemaArquivos:
 
     # calcula a quantidade (em bytes) de espaço ocupado no sistema de
     # arquivos, excluindo o espaço que pode estar ocupado em disco mas
-    # na verdade é livre que corresponde a conteúdo de arquivos removidos
+    # na verdade é livre (que corresponde a conteúdo de arquivos removidos)
     def calcula_tamanho(self):
         tam_meta = self.espaco_livre_meta(True)
 

@@ -4,15 +4,16 @@ from time import time
 from estruturas import *
 
 
+# remove o arquivo de nome nome_arq no diretório dir_arq do sistema de
+# arquivos recebido em sistema
 def rm(dir_arq, nome_arq, sistema):
     blocos_arq = dir_arq.arquivo(nome_arq).lista_blocos(sistema.fat)
     for bloco in blocos_arq:
         # os blocos dos arquivos que são removidos são marcados no bitmap como
         # livres e tirados da FAT, mas o conteúdo deles não é apagado, então o
         # tamanho do arquivo que representa o sistema de arquivos pode não
-        # diminuir quando arquivos são removidos, mas esse arquivo pode ter
-        # 100 MB e ainda ter espaço livre; pra saber o tamanho ocupado tem que
-        # usar a função calcula_tamanho() do sistema de arquivos.
+        # diminuir quando arquivos são removidos; pra saber o tamanho ocupado
+        # é preciso usar a função calcula_tamanho() do sistema de arquivos.
         sistema.bitmap[bloco] = 1
         del sistema.fat[bloco]
 
@@ -21,8 +22,12 @@ def rm(dir_arq, nome_arq, sistema):
     dir_arq.modificado = int(time())
 
 
+# remove o diretório diretorio, que está abaixo do diretório dir_pai e cujo
+# caminho é caminho do sistema de arquivos recebido em sistema. se o diretório
+# não estiver vazio, remove tudo o que estiver embaixo dele (direta e
+# indiretamente) e imprime o nome de tudo que foi removido
 def rmdir(caminho, diretorio, dir_pai, sistema):
-    # se tá vazio, remove direto
+    # se está vazio, remove direto
     if diretorio.arquivos == []:
         if caminho[-1] == '/':
             caminho = caminho[:-1]
@@ -31,7 +36,7 @@ def rmdir(caminho, diretorio, dir_pai, sistema):
         dir_pai.acessado = int(time())
         dir_pai.modificado = int(time())
 
-    # se não tá vazio tem que remover tudo que tem dentro antes
+    # se não está vazio tem que remover tudo que tem dentro antes
     else:
         # itera sobre uma cópia pra poder remover elementos do original
         for arq in diretorio.arquivos[:]:
@@ -58,6 +63,9 @@ def extrapola_limite(tamanho_novo, sistema):
     return False
 
 
+# adiciona um arquivo vazio de nome nome_arq ao diretório dir_arq do sistema
+# de arquivos recebido em sistema, desde que ele não extrapole o limite de
+# 100 MB (retorna False se extrapolar e True se der certo)
 def adiciona_arquivo_vazio(nome_arq, dir_arq, sistema):
     arquivo = Arquivo(None, nome_arq, 0, int(time()), -1)
 
@@ -70,19 +78,20 @@ def adiciona_arquivo_vazio(nome_arq, dir_arq, sistema):
     return True
 
 
-# lê um arquivo no sistema de arquivos externo (do computador rodando a
-# simulação e devolve uma instância de Arquivo com as informações dele
+# lê um arquivo de texto puro no sistema de arquivos externo (do computador
+# rodando a simulação) e devolve o conteúdo dele como uma string
 def le_arquivo_externo(nome_arquivo):
     arq_ext = open(nome_arquivo, 'r')
     conteudo = arq_ext.read()
     return conteudo
 
 
-# aloca um arquivo no sistema considerando que já se tem certeza que ele não
-# irá extrapolar o limite de 100 MB
+# aloca o arquivo arquivo com conteúdo conteudo no sistema considerando que já
+# se tem certeza que ele não irá extrapolar o limite de 100 MB
 def aloca_arquivo(arquivo, conteudo, sistema):
     tamanho = len(conteudo)
 
+    # se o arquivo é vazio, chama o método para adicionar arquivo vazio
     if tamanho == 0:
         adiciona_arquivo_vazio(arquivo.nome, sistema)
 

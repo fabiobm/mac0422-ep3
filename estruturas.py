@@ -1,12 +1,16 @@
 from math import ceil
-from time import time
 
 
 class Arquivo:
     '''
-    Representação de um arquivo com nome, tamanho (em bytes) e
-    instantes em que foi criado, modificado e acessado, além do
-    bloco em que começa o conteúdo do arquivo.
+    Representação de um arquivo com nome, tamanho (em bytes) e instantes em
+    que foi criado, modificado e acessado, além do bloco em que começa o
+    conteúdo do arquivo. Instâncias podem ser criadas a partir das informações
+    extraídas de um arquivo que representa um sistema de arquivos (nesse caso
+    o argumento metadados é diferente de None e é o único fornecido) ou a
+    partir de informações de nome, tamanho, instante e bloco, que são
+    fornecidos como argumentos após o argumento metadados que, nesse caso, tem
+    que ser None
     '''
 
     def __init__(self, metadados, nome=None, tamanho=None, instante=None, bloco_inicio=None):
@@ -26,6 +30,7 @@ class Arquivo:
             self.acessado = int(metadados[4])
             self.bloco_inicio = int(metadados[5])
 
+    # monta o conteúdo do arquivo e retorna uma string com ele
     def conteudo(self, fat, blocos):
         prox_bloco = self.bloco_inicio
         texto = ''
@@ -52,6 +57,9 @@ class Arquivo:
 
         return blocos
 
+    # retorna os metadados do arquivo (nome, tamanho, instantes, bloco de
+    # início) no formato usado para guardar essas informações no arquivo que
+    # representa o sistema de arquivos
     def metadados(self):
         atributos = [self.nome, str(self.tamanho), str(self.modificado)]
         atributos += [str(self.criado), str(self.acessado)]
@@ -60,6 +68,17 @@ class Arquivo:
 
 
 class Diretorio:
+
+    '''
+    Representação de um diretório com nome, instantes em que foi criado,
+    acessado e modificado pela última vez, caminho no sistema de arquivos e
+    lista com arquivos e diretórios diretamente abaixo. Instâncias podem ser
+    criadas a partir das informações extraídas de um arquivo que representa um
+    sistema de arquivos (nesse caso o argumento metadados é diferente de None
+    e é o único fornecido) ou a partir de informações de nome, instante e
+    caminho, que são fornecidos como argumentos após o argumento metadados
+    que, nesse caso, tem que ser None
+    '''
 
     def __init__(self, metadados, nome=None, instante=None, caminho=None):
         if metadados is None:
@@ -108,29 +127,34 @@ class Diretorio:
 
         return (num_dirs, num_arqs)
 
+    # adiciona um arquivo ou diretório embaixo de si, deixando sempre os
+    # diretórios no final da lista
     def adiciona_arquivo(self, arquivo):
         self.arquivos.append(arquivo)
+        # reorganiza lista para diretórios ficarem no final
         arqs = [arq for arq in self.arquivos if isinstance(arq, Arquivo)]
         subdirs = [subdir for subdir in self.arquivos if isinstance(subdir, Diretorio)]
         self.arquivos = arqs + subdirs
-        # lembrar de garantir que diretórios vão estar sempre depois dos
-        # arquivos regulares na lista de arquivos dos diretório
 
+    # remove o arquivo (não diretório) nome_arquivo da lista de arquivos
     def remove_por_nome(self, nome_arquivo):
         arquivo = self.arquivo(nome_arquivo)
         if arquivo is not None:
             self.remove(arquivo)
 
+    # remove o arquivo recebido como argumento da lista de arquivos
     def remove(self, arquivo):
         if isinstance(arquivo, Arquivo):
             self.arquivos.remove(arquivo)
 
+    # retorna, se houver, o arquivo da lista de arquivos de nome nome
     def arquivo(self, nome):
         for arq in self.arquivos:
             if arq.nome == nome:
                 return arq
 
-    # esse método só é chamado pelo diretório raiz
+    # esse método só é chamado pelo diretório raiz e retorna o diretório cujo
+    # caminho está no argumento nome 
     def acha_diretorio(self, nome):
         nome = nome[1:]
         if nome == '':
@@ -147,6 +171,8 @@ class Diretorio:
 
         return diretorio
 
+    # retorna o caminho de todos os arquivos com nome nome_arquivo embaixo
+    # desse diretório (direta ou indiretamente)
     def find(self, nome_arquivo):
         achados = [self.arquivo(nome_arquivo)]  # no próprio diretório
         if achados == [None]:
@@ -162,6 +188,10 @@ class Diretorio:
 
         return achados
 
+    # retorna os metadados do diretório (nome, instantes, caminho e metadados
+    # dos arquivos e diretórios abaixo tanto direta quanto indiretamente) no
+    # formato usado para guardar essas informações no arquivo que representa o
+    # sistema de arquivos
     def metadados(self):
         meta_dir = []
         if self.nome != '/':
