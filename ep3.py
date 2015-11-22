@@ -1,3 +1,5 @@
+# Arquivo principal, é o que deve ser executado
+
 from os import path
 from time import time, ctime
 from sistema import *
@@ -36,7 +38,6 @@ while True:
     elif sistema_montado:
         if comandos[0] == 'cp':
             try:
-                inicio = time()
 
                 caminho = comandos[2].split('/')
                 nome_arq = caminho[-1]
@@ -57,8 +58,6 @@ while True:
                 diretorio.modificado = int(time())
 
                 grava_sistema(nome_sistema, sistema_arquivos)
-
-                print('Tempo:', time() - inicio)
 
             except IndexError:
                 print('Especifique a origem e o destino')
@@ -93,7 +92,6 @@ while True:
 
         if comandos[0] == 'rmdir':
             try:
-                inicio = time()
 
                 if comandos[1] == '/':
                     print('Não é possível remover o diretório raiz')
@@ -107,8 +105,6 @@ while True:
                 rmdir(comandos[1], diretorio, dir_pai, sistema_arquivos)
 
                 grava_sistema(nome_sistema, sistema_arquivos)
-
-                print('Tempo:', time() - inicio)
 
             except IndexError:
                 print('Especifique o nome do diretório')
@@ -153,7 +149,6 @@ while True:
 
         if comandos[0] == 'rm':
             try:
-                inicio = time()
 
                 caminho_dir = comandos[1].split('/')
                 nome_arq = caminho_dir[-1]
@@ -163,8 +158,6 @@ while True:
                 rm(dir_arq, nome_arq, sistema_arquivos)
 
                 grava_sistema(nome_sistema, sistema_arquivos)
-
-                print('Tempo:', time() - inicio)
 
             except IndexError:
                 print('Especifique o nome do arquivo')

@@ -1,3 +1,6 @@
+# Arquivo com estrutura de dados representando o sistema de arquivos e funções
+# relacionadas à manipulação dele
+
 from struct import pack, unpack
 from time import time
 from estruturas import *

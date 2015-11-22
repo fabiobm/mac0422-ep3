@@ -1,4 +1,5 @@
-# funções utilizadas para executar os comandos
+# Arquivo com funções auxiliares utilizadas para executar os comandos
+
 from math import ceil
 from time import time
 from estruturas import *

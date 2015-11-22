@@ -1,3 +1,5 @@
+# Arquivo com estruturas de dado representando arquivos e diretórios
+
 from math import ceil
 
 
